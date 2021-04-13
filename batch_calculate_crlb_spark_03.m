@@ -18,7 +18,9 @@ addpath ../dot-tracking-package/
 dbstop if error
 logical_string = {'False'; 'True'};
 
+% ==========================
 %% experiment settings
+% ==========================
 
 % date of the test
 test_date = '2018-11-19';
@@ -55,16 +57,21 @@ x_pixel_number = 1024;
 pixel_pitch = 13.5;
 % f-number of the camera aperture
 
+% ==========================
 %% processing settings
+% ==========================
 
 % ------------------------
 % read/write settings
 % ------------------------
 % top level directory containing images
-top_image_directory = fullfile('/scratch/shannon/c/aether/Projects/plasma-induced-flow/analysis/data/spark/', test_date); 
+% top_image_directory = fullfile('/scratch/shannon/c/aether/Projects/plasma-induced-flow/analysis/data/spark/', test_date); 
+top_image_directory = fullfile('/scratch/shannon/c/aether/Projects/BOS/crlb/analysis/data/spark/', test_date); 
+
 % top level directory to store the results
 % top_results_directory = fullfile('/scratch/shannon/c/aether/Projects/plasma-induced-flow/analysis/results/spark/', test_date);
 top_results_directory = fullfile('/scratch/shannon/c/aether/Projects/BOS/crlb/analysis/results/spark/', test_date);
+
 % gradient images to be read
 image_read_list = [2, 10]; %, 40];
 % number of reference images to read
@@ -141,7 +148,9 @@ weights = [1, 1, 1];
 % search radius for nearest neighbor tracking (pix.)
 s_radius = 2;
 
+% ==========================
 %% plot settings
+% ==========================
 
 % minimum allowable position uncertainty [pix.]
 min_uncertainty_threshold = 1e-3;
@@ -167,7 +176,9 @@ if image_masking
     ymax_mask = ymin_mask + stats.BoundingBox(4);
 end
 
+% ==========================
 %% calculate reference dot location from dot positions
+% ==========================
 
 % load camera mapping coefficients
 mapping_coefficients = load(fullfile(calibration_directory, ['camera_model_type=' num2str(order_z) '.mat']));
@@ -240,7 +251,9 @@ nan_indices = isnan(pos_ref_dots.x) | isnan(pos_ref_dots.y);
 pos_ref_dots.x(nan_indices) = [];
 pos_ref_dots.y(nan_indices) = [];
 
+% ==========================
 %% load background image for subtraction
+% ==========================
 
 if background_subtraction
     im_bg = imread(fullfile(background_image_directory, background_image_filename));
@@ -258,7 +271,9 @@ if background_subtraction
     end
 end
 
+% ==========================
 %% load image filenames
+% ==========================
 
 % load list of runs for the current pressure condition
 [runs, num_runs] = get_directory_listing(fullfile(top_image_directory, pulse_parameter_name), 'test*');
@@ -278,7 +293,9 @@ if ~exist(current_results_directory, 'dir')
     mkdir(current_results_directory);
 end
 
+% ==========================
 %% identify dots on the images
+% ==========================
 
 fprintf('identifying dots in images\n');
 
@@ -320,7 +337,9 @@ I_ref = cell(1, num_ref_images);
 d_avg_ref = cell(1, num_ref_images);
 
 
+% --------------------------
 %% run both ID and sizing for first reference image
+% --------------------------
 
 image_index = 1;
 
@@ -330,7 +349,9 @@ num_p = size(SIZE1_ref{image_index}.XYDiameter, 1);
 locxy = SIZE1_ref{image_index}.locxy;
 mapsizeinfo = SIZE1_ref{image_index}.mapsizeinfo;
 
+% --------------------------
 %% identify dots on other reference images
+% --------------------------
 
 for image_index = 2:num_ref_images    
     fprintf('image: %d\n', image_index);
@@ -386,7 +407,9 @@ for image_index = 2:num_ref_images
     I_ref{image_index} = SIZE1_ref{image_index}.XYDiameter(:,6);
 end
 
+% ==========================
 %% calculate dot properties and statistics across time series
+% ==========================
 
 % ---------------------------------------------
 % find matching dots between successive frames
@@ -394,8 +417,6 @@ end
 fprintf('finding matching dots across frames \n');
 % reference images
 [X_all_ref, Y_all_ref, Z_all_ref, d_x_all_ref, d_y_all_ref, R_all_ref, I_all_ref] = find_matching_dots_across_time_series_02(X_ref, Y_ref, Z_ref, d_x_ref, d_y_ref, R_ref, I_ref);
-
-%% calculate statistics
 
 % ---------------------------------------------
 % calculate mean properties
@@ -427,10 +448,11 @@ fprintf('calculating per properties \n');
 % reference image
 [X_per_ref, Y_per_ref, Z_per_ref, d_x_per_ref, d_y_per_ref, R_per_ref, I_per_ref] = calculate_per_across_time_series_02(X_all_ref, Y_all_ref, Z_all_ref, d_x_all_ref, d_y_all_ref, R_all_ref, I_all_ref);
 
+
+% ==========================
 %% identify dots on gradient image
-% --------------------------
-% Gradient Image
-% --------------------------
+% ==========================
+
 fprintf('Gradient Images\n');
 % number of images to be read
 num_images_read = numel(image_read_list);
@@ -451,12 +473,15 @@ for image_index = image_read_list
 
     fprintf('image: %d\n', image_index);
 
+    % --------------------------
     %% create directory to save workspace for the current case
-    
+    % --------------------------    
     workspace_save_directory = fullfile(current_results_directory, ['im' num2str(image_index, '%04d')], 'workspace');
     mkdir_c(workspace_save_directory);    
 
+    % --------------------------
     %% load and process image
+    % --------------------------
     
     % load image
     im = imread(fullfile(grad_images(image_index).folder, grad_images(image_index).name));    
@@ -478,6 +503,7 @@ for image_index = image_read_list
         indices = im < 0;
         im(indices) = 0;
     end
+    
     % identify dots
     [SIZE1_grad{image_index}.XYDiameter, SIZE1_grad{image_index}.peaks, SIZE1_grad{image_index}.mapsizeinfo, SIZE1_grad{image_index}.locxy, SIZE1_grad{image_index}.mapint]=combined_ID_size_apriori_10(im, pos_ref_dots.x, pos_ref_dots.y, dot_diameter, subpixel_fit, default_iwc, min_area, W_area, W_intensity, W_distance);
 
@@ -491,8 +517,10 @@ for image_index = image_read_list
     R_grad{image_index} = SIZE1_grad{image_index}.XYDiameter(:,5);
     I_grad{image_index} = SIZE1_grad{image_index}.XYDiameter(:,6);
 
+    % --------------------------
     %% dot tracking
-
+    % --------------------------
+    
     % ------------------------------------------------------------------
     % find matching dots between reference and the first gradient image
     % ------------------------------------------------------------------
@@ -500,12 +528,14 @@ for image_index = image_read_list
     fprintf('tracking dot locations between reference image and first grad image\n');
 
     % run tracking
-%     [tracks]=weighted_nearest_neighbor3D(X_grad{image_index}, X_ref{1}, X_grad{image_index}, Y_grad{image_index}, Y_ref{1}, Y_grad{image_index},...
-%         Z_grad{image_index}, Z_ref{1}, Z_grad{image_index}, d_avg_grad{image_index}, d_avg_ref{1}, I_grad{image_index}, I_ref{1}, weights, s_radius);
+    % [tracks]=weighted_nearest_neighbor3D(X_grad{image_index}, X_ref{1}, X_grad{image_index}, Y_grad{image_index}, Y_ref{1}, Y_grad{image_index},...
+    %     Z_grad{image_index}, Z_ref{1}, Z_grad{image_index}, d_avg_grad{image_index}, d_avg_ref{1}, I_grad{image_index}, I_ref{1}, weights, s_radius);
     [tracks]=weighted_nearest_neighbor3D(X_grad{image_index}, X_median_ref, X_grad{image_index}, Y_grad{image_index}, Y_median_ref, Y_grad{image_index},...
         Z_grad{image_index}, Z_median_ref, Z_grad{image_index}, d_avg_grad{image_index}, d_avg_median_ref, I_grad{image_index}, I_median_ref, weights, s_radius);
 
+    % --------------------------
     % perform correlation correction
+    % --------------------------
     
     fprintf('correlation correction \n');
     % get final sub-pixel displacement estimate by cross-correlation intensity
@@ -525,8 +555,10 @@ for image_index = image_read_list
     % append results to track
     tracks = [tracks, U, V];
 
+    % --------------------------
     %% calculate amplification ratio and position uncertainty from model
-
+    % --------------------------
+    
     fprintf('calculating crlb \n');
 
     % number of dots for which the crlb needs to be calculated
@@ -556,14 +588,18 @@ for image_index = image_read_list
             fprintf('Track number: %d\n', track_index);
         end        
         
+        % --------------------------
         %% extract dot index
-        
+        % --------------------------
+    
         % reference
         p_ref = tracks(track_index, 12);        
         % gradient
         p_grad = tracks(track_index, 11);
         
+        % --------------------------
         %% extract dot image co-ordinates
+        % --------------------------
         
         % reference
         X_ref_tracked(track_index) = X_median_ref(p_ref);
@@ -573,12 +609,16 @@ for image_index = image_read_list
         X_grad_tracked(track_index) = X_grad{image_index}(p_grad);
         Y_grad_tracked(track_index) = Y_grad{image_index}(p_grad);
         
+        % --------------------------
         %% calculate amplification ratio
+        % --------------------------
         
         [AR_x_tracked(track_index), AR_y_tracked(track_index)] = calculate_amplification_ratio(d_x_median_ref(p_ref), d_y_median_ref(p_ref), R_median_ref(p_ref), I_median_ref(p_ref), ...
                                                     d_x_grad{image_index}(p_grad), d_y_grad{image_index}(p_grad), R_grad{image_index}(p_grad), I_grad{image_index}(p_grad));
         
+        % --------------------------
         %% calculate position uncertainty
+        % --------------------------
         
         % reference
         X_std_ref_tracked(track_index) = X_std_ref(p_ref);
@@ -593,7 +633,9 @@ for image_index = image_read_list
     AR_x_tracked(~isfinite(AR_x_tracked)) = 1;
     AR_y_tracked(~isfinite(AR_y_tracked)) = 1;
 
+    % --------------------------
     %% calculate pdf of position uncertainty
+    % --------------------------
     
     % identify measurements that have displacements greater than the 10th
     % percentile
@@ -617,12 +659,10 @@ for image_index = image_read_list
     rms_ref_all = rms(X_std_ref_tracked_all(:), 'omitnan');
     rms_grad_all = rms(X_std_grad_tracked_all(:), 'omitnan');
     
-    %% close all figures
-    
+    % close all figures    
     close all;
 
-    %% save workspace to file
-    
+    % save workspace to file    
     save(fullfile(workspace_save_directory, [extract_script_name(mfilename('fullpath')) '.mat']));
 
 end

@@ -9,11 +9,11 @@ clc
 rmpath('/scratch/shannon/a/lrajendr/Software/prana');
 restoredefaultpath;
 % addpath ../prana-master/
-addpath /scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/error-analysis-codes/helper-codes/mCodes/
-addpath /scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/error-analysis-codes/post-processing-codes/
+% addpath /scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/error-analysis-codes/helper-codes/mCodes/
+% addpath /scratch/shannon/c/aether/Projects/BOS/error-analysis/analysis/src/error-analysis-codes/post-processing-codes/
 % addpath ../error-analysis-codes/ptv-codes/
 addpath(genpath('/scratch/shannon/c/aether/Projects/BOS/general-codes/matlab-codes/'));
-addpath /scratch/shannon/a/lrajendr/Software/general-mCodes/
+% addpath /scratch/shannon/a/lrajendr/Software/general-mCodes/
 addpath /scratch/shannon/a/lrajendr/Software/cbrewer/
 addpath ../dot-tracking-package/
 % addpath 
